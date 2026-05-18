@@ -1,0 +1,16 @@
+stages:
+  train:
+    cmd: python -m src.training.train
+    deps:
+      - src
+      - ../refs/data/bitext-limpio.parquet
+    params:
+      - data
+      - training
+      - artifacts
+    outs:
+      - models/modelo_idf.joblib
+      - models/model_metadata.json
+    metrics:
+      - dvclive/metrics.json:
+          cache: false

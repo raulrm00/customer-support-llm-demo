@@ -1,0 +1,25 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Python build artifacts
+build/
+dist/
+*.egg-info/
+
+# Local model and data artifacts
+ml/data/raw/*
+ml/data/processed/*
+ml/data/splits/*
+ml/models/*.joblib
+ml/models/*.pkl
+
+# Keep placeholder files when added intentionally
+!ml/data/**/.gitkeep
+!ml/models/.gitkeep
