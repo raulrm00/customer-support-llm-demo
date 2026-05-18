@@ -9,6 +9,7 @@ Initial backend, ML training, and DVC pipeline implementation.
 - ML training scripts under `ml/src/`.
 - DVC-managed ML dataset at `ml/data/raw/bitext-limpio.parquet`.
 - DVC training stage in `ml/dvc.yaml`.
+- Backend and frontend implementation specifications under `docs/specs/`.
 
 ## Known blockers
 - No current DVC blocker. DVC commands required elevated execution in this
@@ -83,5 +84,5 @@ mypy src
   directly Git-tracked file.
 
 ## Suggested next task
-Configure a DVC remote for team storage, then run `dvc push` after approving the
-remote location.
+Scaffold the Angular frontend with Tailwind using `docs/specs/frontend.md`, or
+configure a DVC remote for team storage and run `dvc push`.

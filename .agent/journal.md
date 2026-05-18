@@ -139,3 +139,34 @@ tests that prevent the default training configuration from pointing back to
 ### Next steps
 Configure a DVC remote and run `dvc push` so the dataset and generated model
 artifacts are available outside the local cache.
+
+## 2026-05-18 19:55 - Add backend and frontend specs
+
+### Goal
+Document backend and frontend implementation specifications from `AGENTS.md`
+and the existing backend code.
+
+### Files changed
+- `.agent/decisions.md`
+- `.agent/handoff.md`
+- `.agent/journal.md`
+- `docs/specs/backend.md`
+- `docs/specs/frontend.md`
+
+### Summary
+Created backend and frontend specifications under `docs/specs/` because
+`refs/` is read-only for agents. The backend spec captures the implemented
+FastAPI endpoints, schemas, configuration, model loading, error handling, CORS,
+and validation requirements. The frontend spec defines an Angular project using
+Tailwind, typed API models, an API service, Spanish UI copy, prediction form
+behavior, accessibility expectations, and test requirements.
+
+### Validation
+- `& ..\.venv\Scripts\python.exe -m pytest` from `backend/`: passed, 3 tests.
+- Initial `..\.venv\Scripts\python.exe -m pytest` invocation from `backend/`:
+  failed because PowerShell did not resolve the relative executable path without
+  the call operator.
+
+### Next steps
+Use `docs/specs/frontend.md` to scaffold the Angular frontend and add frontend
+tests once the project exists.
