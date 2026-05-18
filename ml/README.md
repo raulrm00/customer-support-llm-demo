@@ -9,8 +9,17 @@ cd ml
 ..\.venv\Scripts\python.exe -m src.training.train
 ```
 
-The default training input is `../refs/data/bitext-limpio.parquet` and the
-default artifact is `models/modelo_idf.joblib`.
+The default training input is `data/raw/bitext-limpio.parquet`, tracked with
+DVC, and the default artifact is `models/modelo_idf.joblib`.
+
+## DVC
+
+```powershell
+cd ml
+..\.venv\Scripts\python.exe -m dvc status
+..\.venv\Scripts\python.exe -m dvc repro
+..\.venv\Scripts\python.exe -m dvc metrics show
+```
 
 ## Inference
 

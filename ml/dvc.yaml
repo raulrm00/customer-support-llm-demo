@@ -1,9 +1,9 @@
 stages:
   train:
-    cmd: python -m src.training.train
+    cmd: ..\.venv\Scripts\python.exe -m src.training.train
     deps:
       - src
-      - ../refs/data/bitext-limpio.parquet
+      - data/raw/bitext-limpio.parquet
     params:
       - data
       - training

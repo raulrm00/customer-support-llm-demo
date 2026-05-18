@@ -1,0 +1,42 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: ..\.venv\Scripts\python.exe -m src.training.train
+    deps:
+    - path: data/raw/bitext-limpio.parquet
+      hash: md5
+      md5: 43fbf7b2baaa5faaedee9c809280e8db
+      size: 5931327
+    - path: src
+      hash: md5
+      md5: bc3ea01b2238baf40c7d694ce2f985f6.dir
+      size: 12514
+      nfiles: 11
+    params:
+      params.yaml:
+        artifacts:
+          model_path: models/modelo_idf.joblib
+          metadata_path: models/model_metadata.json
+        data:
+          input_path: data/raw/bitext-limpio.parquet
+          target_column: category
+          text_column: instruction
+        training:
+          test_size: 0.1
+          validation_size: 0.3
+          random_state: 42
+          max_iter: 1000
+          stop_words: english
+    outs:
+    - path: dvclive/metrics.json
+      hash: md5
+      md5: 2818198ede743b281814a2fefb3500ee
+      size: 569
+    - path: models/model_metadata.json
+      hash: md5
+      md5: cb42be5d6f1e6286820128704cd5a631
+      size: 960
+    - path: models/modelo_idf.joblib
+      hash: md5
+      md5: e801273ac1d5cc06acb59b279b129a0d
+      size: 228113

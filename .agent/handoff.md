@@ -1,16 +1,18 @@
 # Handoff
 
 ## Current implementation phase
-Initial backend and ML training implementation.
+Initial backend, ML training, and DVC pipeline implementation.
 
 ## Main working areas
 - FastAPI backend under `backend/`.
 - Customer support category prediction using `ml/models/modelo_idf.joblib`.
 - ML training scripts under `ml/src/`.
+- DVC-managed ML dataset at `ml/data/raw/bitext-limpio.parquet`.
+- DVC training stage in `ml/dvc.yaml`.
 
 ## Known blockers
-- DVC is not initialized/trusted in the current environment, so `dvc status` and
-  `dvc metrics show` did not complete.
+- No current DVC blocker. DVC commands required elevated execution in this
+  environment because the sandbox could not access DVC/Git cache files.
 
 ## Commands needed to run the project
 ```powershell
@@ -23,6 +25,10 @@ cd ml
 ..\.venv\Scripts\python.exe -m src.training.train
 ```
 
+```powershell
+..\.venv\Scripts\python.exe -m dvc repro ml\dvc.yaml
+```
+
 ## Commands needed to run tests
 ```powershell
 cd backend
@@ -32,6 +38,12 @@ pytest
 ```powershell
 cd ml
 pytest
+```
+
+```powershell
+cd ml
+..\.venv\Scripts\python.exe -m dvc status
+..\.venv\Scripts\python.exe -m dvc metrics show
 ```
 
 ## Static analysis commands
@@ -65,8 +77,11 @@ mypy src
   `DataFrame` with an `instruction` column.
 - Confidence is omitted when the loaded pipeline does not support
   `predict_proba`.
-- DVC commands need repository initialization and/or safe-directory ownership
-  configuration before they can be used reliably in this environment.
+- DVC has no remote configured yet, so cached data and model artifacts are local
+  until a remote is added and `dvc push` is run.
+- `ml/models/model_metadata.json` is now a generated DVC output, not a
+  directly Git-tracked file.
 
 ## Suggested next task
-Initialize DVC for the repository and run the ML pipeline through `dvc repro`.
+Configure a DVC remote for team storage, then run `dvc push` after approving the
+remote location.

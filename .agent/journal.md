@@ -94,3 +94,48 @@ path to consume this artifact.
 ### Next steps
 Initialize/configure DVC ownership for the workspace, then run `dvc status`,
 `dvc repro`, and `dvc metrics show` through the DVC-managed pipeline.
+
+## 2026-05-18 18:02 - Initialize DVC training pipeline
+
+### Goal
+Initialize DVC and remove the ML training dependency on `refs/`.
+
+### Files changed
+- `.dvc/config`
+- `.dvc/.gitignore`
+- `.dvcignore`
+- `.gitignore`
+- `.agent/decisions.md`
+- `.agent/handoff.md`
+- `.agent/journal.md`
+- `ml/README.md`
+- `ml/data/raw/bitext-limpio.parquet.dvc`
+- `ml/dvc.lock`
+- `ml/dvc.yaml`
+- `ml/models/.gitignore`
+- `ml/params.yaml`
+- `ml/tests/test_dvc_configuration.py`
+
+### Summary
+Initialized DVC for the repository, copied the Bitext parquet dataset from
+`refs/data/` to `ml/data/raw/`, and tracked the ML copy with DVC. Updated
+`params.yaml` and `dvc.yaml` so training uses the DVC-managed ML dataset, not
+`refs/`. Added Git/DVC ignores for `refs/` and local caches, made
+`model_metadata.json` a generated DVC output, generated `ml/dvc.lock`, and added
+tests that prevent the default training configuration from pointing back to
+`refs/`.
+
+### Validation
+- `.\.venv\Scripts\python.exe -m dvc add ml\data\raw\bitext-limpio.parquet`: passed.
+- `.\.venv\Scripts\python.exe -m dvc repro ml\dvc.yaml`: passed and regenerated the model, metadata, metrics, and lock file.
+- `.\.venv\Scripts\python.exe -m dvc status`: passed, data and pipelines are up to date.
+- `.\.venv\Scripts\python.exe -m dvc metrics show`: passed, reported train/validation/test metrics.
+- `..\.venv\Scripts\python.exe -m black src tests` from `ml/`: passed.
+- `..\.venv\Scripts\python.exe -m ruff check src tests` from `ml/`: passed.
+- `..\.venv\Scripts\python.exe -m mypy src` from `ml/`: passed.
+- `..\.venv\Scripts\python.exe -m pytest` from `ml/`: passed, 3 tests with 1 DVCLive dependency warning.
+- `..\.venv\Scripts\python.exe -m pytest` from `backend/`: passed, 3 tests.
+
+### Next steps
+Configure a DVC remote and run `dvc push` so the dataset and generated model
+artifacts are available outside the local cache.

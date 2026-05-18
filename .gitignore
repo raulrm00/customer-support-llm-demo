@@ -1,5 +1,6 @@
 .env
 .venv/
+refs/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -23,3 +24,4 @@ ml/models/*.pkl
 # Keep placeholder files when added intentionally
 !ml/data/**/.gitkeep
 !ml/models/.gitkeep
+!ml/data/raw/*.dvc
