@@ -1,0 +1,130 @@
+<main class="min-h-dvh bg-slate-50 px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
+  <section class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <header class="max-w-3xl">
+      <p class="text-sm font-semibold uppercase text-teal-700">
+        Atencion al cliente
+      </p>
+      <h1 class="mt-2 text-3xl font-semibold text-slate-950 sm:text-4xl">
+        Clasificador de solicitudes
+      </h1>
+      <p class="mt-3 text-base leading-7 text-slate-700">
+        Describe la solicitud que quieres clasificar y enviaremos el texto al
+        servicio de prediccion.
+      </p>
+    </header>
+
+    <div class="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+      <form
+        class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+        (ngSubmit)="submit()"
+        novalidate
+      >
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-slate-900" for="instruction">
+            Solicitud del cliente
+          </label>
+          <textarea
+            id="instruction"
+            class="min-h-52 resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-base leading-7 text-slate-950 shadow-sm outline-none transition focus:border-teal-700 focus:ring-2 focus:ring-teal-200"
+            [formControl]="instruction"
+            [attr.maxlength]="maxLength"
+            [attr.aria-invalid]="instruction.invalid && instruction.touched"
+            aria-describedby="instruction-help instruction-error"
+          ></textarea>
+          <div
+            class="flex flex-col gap-1 text-sm sm:flex-row sm:items-start sm:justify-between"
+          >
+            <p id="instruction-help" class="text-slate-600">
+              Describe la solicitud que quieres clasificar.
+            </p>
+            <p class="text-slate-500">
+              {{ instruction.value.length }}/{{ maxLength }}
+            </p>
+          </div>
+
+          @if (instruction.hasError('required') && instruction.touched) {
+            <p id="instruction-error" class="text-sm font-medium text-red-700">
+              El texto es obligatorio.
+            </p>
+          } @else if (instruction.hasError('maxlength') && instruction.touched) {
+            <p id="instruction-error" class="text-sm font-medium text-red-700">
+              El texto no puede superar los {{ maxLength }} caracteres.
+            </p>
+          } @else {
+            <span id="instruction-error" class="sr-only">Sin errores</span>
+          }
+        </div>
+
+        <button
+          class="mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
+          type="submit"
+          [disabled]="!canSubmit()"
+        >
+          @if (isLoading()) {
+            Clasificando...
+          } @else {
+            Predecir categoria
+          }
+        </button>
+      </form>
+
+      <aside
+        class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+        aria-live="polite"
+      >
+        <h2 class="text-xl font-semibold text-slate-950">
+          Resultado de la prediccion
+        </h2>
+
+        @if (isLoading()) {
+          <p
+            class="mt-4 rounded-md border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900"
+          >
+            Estamos analizando la solicitud.
+          </p>
+        } @else if (errorMessage()) {
+          <p
+            class="mt-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800"
+          >
+            {{ errorMessage() }}
+          </p>
+        } @else if (result(); as prediction) {
+          <dl class="mt-4 grid gap-4">
+            <div class="rounded-md border border-slate-200 p-4">
+              <dt class="text-sm font-medium text-slate-600">Categoria</dt>
+              <dd class="mt-1 text-2xl font-semibold text-slate-950">
+                {{ categoryLabels[prediction.prediction] }}
+              </dd>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="rounded-md border border-slate-200 p-4">
+                <dt class="text-sm font-medium text-slate-600">Confianza</dt>
+                <dd class="mt-1 text-lg font-semibold text-slate-950">
+                  {{ confidencePercent(prediction.confidence) }}
+                </dd>
+              </div>
+              <div class="rounded-md border border-slate-200 p-4">
+                <dt class="text-sm font-medium text-slate-600">Modelo</dt>
+                <dd class="mt-1 text-lg font-semibold text-slate-950">
+                  {{ prediction.model_version }}
+                </dd>
+              </div>
+            </div>
+            <div class="rounded-md border border-slate-200 p-4">
+              <dt class="text-sm font-medium text-slate-600">Pipeline</dt>
+              <dd class="mt-1 text-lg font-semibold text-slate-950">
+                {{ prediction.pipeline_version }}
+              </dd>
+            </div>
+          </dl>
+        } @else {
+          <p
+            class="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700"
+          >
+            Aun no hay ninguna prediccion. Introduce una solicitud para ver el resultado.
+          </p>
+        }
+      </aside>
+    </div>
+  </section>
+</main>

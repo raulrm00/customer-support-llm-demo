@@ -1,7 +1,7 @@
 # Handoff
 
 ## Current implementation phase
-Initial backend, ML training, and DVC pipeline implementation.
+Initial backend, ML training, DVC pipeline, and Angular prediction UI implementation.
 
 ## Main working areas
 - FastAPI backend under `backend/`.
@@ -10,6 +10,7 @@ Initial backend, ML training, and DVC pipeline implementation.
 - DVC-managed ML dataset at `ml/data/raw/bitext-limpio.parquet`.
 - DVC training stage in `ml/dvc.yaml`.
 - Backend and frontend implementation specifications under `docs/specs/`.
+- Angular prediction feature under `frontend/src/app/features/predictions/`.
 
 ## Known blockers
 - No current DVC blocker. DVC commands required elevated execution in this
@@ -24,6 +25,11 @@ cd backend
 ```powershell
 cd ml
 ..\.venv\Scripts\python.exe -m src.training.train
+```
+
+```powershell
+cd frontend
+npm start
 ```
 
 ```powershell
@@ -45,6 +51,11 @@ pytest
 cd ml
 ..\.venv\Scripts\python.exe -m dvc status
 ..\.venv\Scripts\python.exe -m dvc metrics show
+```
+
+```powershell
+cd frontend
+npm test
 ```
 
 ## Static analysis commands
@@ -82,7 +93,10 @@ mypy src
   until a remote is added and `dvc push` is run.
 - `ml/models/model_metadata.json` is now a generated DVC output, not a
   directly Git-tracked file.
+- Frontend validation could not be run in the current shell because `npm` and
+  `node` were not available on PATH after the user PowerShell profile failed to
+  load `fnm`.
 
 ## Suggested next task
-Scaffold the Angular frontend with Tailwind using `docs/specs/frontend.md`, or
-configure a DVC remote for team storage and run `dvc push`.
+Restore Node/npm on PATH and run `npm test` plus `npm run build` from
+`frontend/`, or configure a DVC remote for team storage and run `dvc push`.

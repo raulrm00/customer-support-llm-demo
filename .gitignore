@@ -24,3 +24,10 @@ ml/models/*.pkl
 !ml/data/**/.gitkeep
 !ml/models/.gitkeep
 !ml/data/raw/*.dvc
+
+# Frontend local tooling and generated files
+frontend/.vscode/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/cache/
+frontend/coverage/

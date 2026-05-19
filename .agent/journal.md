@@ -170,3 +170,53 @@ behavior, accessibility expectations, and test requirements.
 ### Next steps
 Use `docs/specs/frontend.md` to scaffold the Angular frontend and add frontend
 tests once the project exists.
+
+## 2026-05-19 17:34 - Implement Angular prediction UI
+
+### Goal
+Connect the Angular frontend to the FastAPI prediction endpoint and fix
+subdirectory ignore rules for local frontend tooling.
+
+### Files changed
+- `.gitignore`
+- `.agent/handoff.md`
+- `.agent/journal.md`
+- `frontend/.gitignore`
+- `frontend/README.md`
+- `frontend/tailwind.config.js`
+- `frontend/src/environments/environment.ts`
+- `frontend/src/environments/environment.development.ts`
+- `frontend/src/app/app.config.ts`
+- `frontend/src/app/app.css`
+- `frontend/src/app/app.html`
+- `frontend/src/app/app.routes.ts`
+- `frontend/src/app/app.spec.ts`
+- `frontend/src/app/app.ts`
+- `frontend/src/app/models/prediction.model.ts`
+- `frontend/src/app/services/prediction-api.service.ts`
+- `frontend/src/app/services/prediction-api.service.spec.ts`
+- `frontend/src/app/features/predictions/prediction-page.component.ts`
+- `frontend/src/app/features/predictions/prediction-page.component.html`
+- `frontend/src/app/features/predictions/prediction-page.component.spec.ts`
+
+### Summary
+Replaced the generated Angular placeholder with a lazy-loaded prediction page.
+Added typed prediction API contracts, an Angular `HttpClient` service with a
+timeout, environment-based backend configuration, Reactive Forms validation,
+Spanish UI copy, loading/success/error/empty states, and focused Vitest tests
+for the component and API service. Updated root and frontend `.gitignore` rules
+so `frontend/.vscode/` is ignored.
+
+### Validation
+- `git check-ignore -v frontend/.vscode/tasks.json`: passed; ignored by
+  `frontend/.gitignore`.
+- `git status --short --untracked-files=all`: passed; `frontend/.vscode/*` no
+  longer appears as untracked.
+- `rg "[^\x00-\x7F]" frontend\src`: passed; no non-ASCII characters were
+  introduced in frontend source.
+- `npm test -- --watch=false` from `frontend/`: failed because `npm` was not
+  available on PATH after the PowerShell profile failed to load `fnm`.
+
+### Next steps
+Restore Node/npm on PATH, then run `npm test` and `npm run build` from
+`frontend/`.
