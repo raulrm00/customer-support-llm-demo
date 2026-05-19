@@ -83,3 +83,17 @@ reactivity patterns and reduces boilerplate code in the component.
 ### Consequences
 The form now correctly submits without refreshing the page, allowing the
 asynchronous prediction request to complete.
+
+## 2026-05-19 - Multi-stage Alpine build for backend
+
+### Context
+The backend depends on heavy libraries like `pandas` and `scikit-learn` which lack pre-compiled wheels for Alpine Linux (musl). Building these directly in the final image would result in a very large image containing unnecessary build tools.
+
+### Decision
+Use a multi-stage Docker build. Stage 1 (builder) installs `g++`, `musl-dev`, and other tools to compile wheels. Stage 2 (final) only installs runtime dependencies like `libstdc++` and `openblas`, and copies the pre-built wheels from Stage 1.
+
+### Rationale
+This approach fulfills the requirement to use Alpine while keeping the final production image size minimal and free of build-time only dependencies.
+
+### Consequences
+The build process will take longer due to compilation, but the resulting image will be more secure and efficient for production. The build must be executed from the repository root to allow the `COPY` commands to reach both `backend/` and `ml/models/`.

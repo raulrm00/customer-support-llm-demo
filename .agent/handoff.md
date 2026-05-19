@@ -11,12 +11,19 @@ Initial backend, ML training, DVC pipeline, and Angular prediction UI implementa
 - DVC training stage in `ml/dvc.yaml`.
 - Backend and frontend implementation specifications under `docs/specs/`.
 - Angular prediction feature under `frontend/src/app/features/predictions/`.
+- Backend Dockerization with `backend/Dockerfile`.
 
 ## Known blockers
 - No current DVC blocker. DVC commands required elevated execution in this
   environment because the sandbox could not access DVC/Git cache files.
+- Docker commands cannot be executed directly within this environment; the `Dockerfile` was verified manually.
 
 ## Commands needed to run the project
+```powershell
+# Build and run backend container (from repository root)
+docker build -t customer-support-backend -f backend/Dockerfile .
+docker run -p 8000:8000 customer-support-backend
+```
 ```powershell
 cd backend
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload

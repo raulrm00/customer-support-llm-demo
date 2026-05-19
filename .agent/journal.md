@@ -248,3 +248,25 @@ subscription, aligning with modern Angular signals patterns.
 
 ### Next steps
 Continue with frontend styling or implement the Docker Compose deployment.
+
+## 2026-05-19 18:45 - Dockerize backend service
+
+### Goal
+Create a production-ready Docker image for the backend service based on Alpine Linux.
+
+### Files changed
+- `backend/Dockerfile`
+- `.agent/journal.md`
+- `.agent/decisions.md`
+- `.agent/handoff.md`
+
+### Summary
+Generated a `Dockerfile` for the backend using a multi-stage build pattern on `python:3.13-alpine`. The image installs only production dependencies, includes the trained model artifacts from `ml/models/`, and excludes the training source code. It configures the runtime environment using environment variables and exposes the API on port 8000 via `uvicorn`.
+
+### Validation
+- `backend/Dockerfile` created and verified for path consistency.
+- Multi-stage build handles the compilation of heavy dependencies (pandas, scikit-learn) required by the Alpine (musl) environment.
+- Root repository context is required for the build to access `ml/models/`.
+
+### Next steps
+Implement `docker-compose.yml` to orchestrate the backend and frontend services.
