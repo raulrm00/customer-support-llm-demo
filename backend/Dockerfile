@@ -22,7 +22,8 @@ FROM python:3.13-alpine
 # Install runtime dependencies
 RUN apk add --no-cache \
     libstdc++ \
-    openblas
+    openblas \
+    curl
 
 WORKDIR /app
 

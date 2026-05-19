@@ -1,71 +1,54 @@
-# Frontend
+# Frontend - Customer Support Classifier
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.11.
+Angular application for interacting with the Customer Support Classifier API.
 
-## Prediction workflow
+## Features
 
-The first screen lets users classify customer support requests through the
-FastAPI backend.
+- **Interactive UI**: Submit requests and see predictions in real-time.
+- **Spanish Interface**: All user-facing text is in Spanish (Labels, messages, etc.).
+- **Responsive Design**: Built with Tailwind CSS for a modern, accessible experience.
+- **Type Safe**: Fully typed API contracts and components.
 
-- Backend development URL: `http://localhost:8000/api/v1`
-- Prediction endpoint: `POST /predictions`
-- Frontend environment file: `src/environments/environment.ts`
+## Local Setup
 
-All visible UI text is written in Spanish. The backend URL is read from the
-Angular environment configuration and must not be hardcoded in components.
+1. **Install dependencies**:
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-## Development server
+2. **Run development server**:
+   ```bash
+   npm start
+   ```
+   Once running, navigate to `http://localhost:4200/`.
 
-To start a local development server, run:
+## Docker
 
+### Build Image
+Execute from the `frontend/` directory:
 ```bash
-ng serve
+cd frontend
+docker build -t customer-support-frontend .
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+### Run Container
 ```bash
-ng generate component component-name
+docker run -p 4200:4200 customer-support-frontend
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Quality Assurance
 
 ```bash
-ng generate --help
+cd frontend
+npm test        # Run unit tests
+npm run build   # Production build validation
 ```
 
-## Building
+## Implementation Details
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Framework**: Angular (Standalone Components, Signals).
+- **Styling**: Tailwind CSS.
+- **Language**: UI in Spanish, Technical Code in English.
+- **Accessibility**: Follows WCAG AA standards and passes AXE checks.
+- **Backend URL**: Configured via Angular environment files.

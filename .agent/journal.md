@@ -270,3 +270,27 @@ Generated a `Dockerfile` for the backend using a multi-stage build pattern on `p
 
 ### Next steps
 Implement `docker-compose.yml` to orchestrate the backend and frontend services.
+
+## 2026-05-19 20:15 - Fix CORS and Docker environment configuration
+
+### Goal
+Resolve CORS issues when running the application via Docker and improve environment flexibility.
+
+### Files changed
+- `backend/app/core/config.py`
+- `docker-compose.yml`
+- `.env.example`
+- `frontend/Dockerfile`
+- `backend/Dockerfile`
+
+### Summary
+Identified that strict default CORS origins in the backend were causing issues in Docker environments (e.g., when accessing via 127.0.0.1 instead of localhost). Expanded `cors_allowed_origins` to include common local origins. Updated `docker-compose.yml` to explicitly include `CORS_ALLOWED_ORIGINS` for easier configuration. Modified `frontend/Dockerfile` to ensure environment files are correctly updated during build for both production and development environments. Installed `curl` in the backend image to support the healthcheck defined in Docker Compose.
+
+### Validation
+- Backend configuration verified for comma-separated origin parsing.
+- Docker Compose healthcheck dependency on `curl` addressed.
+- Frontend build process robustly updates environment files.
+
+### Next steps
+Final verification of the full application flow in the containerized environment.
+

@@ -97,3 +97,18 @@ This approach fulfills the requirement to use Alpine while keeping the final pro
 
 ### Consequences
 The build process will take longer due to compilation, but the resulting image will be more secure and efficient for production. The build must be executed from the repository root to allow the `COPY` commands to reach both `backend/` and `ml/models/`.
+
+## 2026-05-19 - Expanding CORS Origins and Healthcheck Support
+
+### Context
+When deploying the application with Docker Compose, the backend's strict default CORS origin (`http://localhost:4200`) caused issues when accessed via alternative local addresses (like `127.0.0.1` or the host IP). Additionally, the backend healthcheck in `docker-compose.yml` relied on `curl`, which was missing from the Alpine-based backend image.
+
+### Decision
+Expanded the default `cors_allowed_origins` in the backend configuration to include `http://127.0.0.1:4200` and `http://0.0.0.0:4200`. Explicitly exposed `CORS_ALLOWED_ORIGINS` as an environment variable in `docker-compose.yml`. Installed `curl` in the final stage of the backend `Dockerfile`.
+
+### Rationale
+Including common local origins by default reduces friction during initial Docker deployment without significantly compromising security in a development/local context. Making the variable explicit in `docker-compose.yml` follows the principle of discoverability. Installing `curl` is necessary because the `docker-compose` healthcheck mechanism requires it to verify the `/health` endpoint from within the container.
+
+### Consequences
+CORS issues are resolved for the most common local deployment scenarios. The backend service will now correctly report its health status to Docker Compose, allowing the frontend service (which depends on it) to start reliably.
+
