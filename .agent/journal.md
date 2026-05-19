@@ -220,3 +220,31 @@ so `frontend/.vscode/` is ignored.
 ### Next steps
 Restore Node/npm on PATH, then run `npm test` and `npm run build` from
 `frontend/`.
+
+## 2026-05-19 18:20 - Fix form submission refresh
+
+### Goal
+Fix the issue where the prediction form refreshes the browser on submission,
+preventing the prediction logic from executing.
+
+### Files changed
+- `frontend/src/app/features/predictions/prediction-page.component.ts`
+- `frontend/src/app/features/predictions/prediction-page.component.html`
+- `.agent/decisions.md`
+- `.agent/journal.md`
+
+### Summary
+Refactored the prediction form to use a `FormGroup` instead of a standalone
+`FormControl`. Bound the `FormGroup` to the `<form>` element using
+`[formGroup]`, which allows Angular's `ngSubmit` to correctly intercept the
+`submit` event and prevent the default browser refresh behavior. Migrated the
+form validation state to use `toSignal` and removed the explicit `constructor`
+subscription, aligning with modern Angular signals patterns.
+
+### Validation
+- `npm test -- --watch=false` from `frontend/`: passed, 8 tests.
+- Form logic verified: the `submit()` method is now called, and the page no
+  longer refreshes.
+
+### Next steps
+Continue with frontend styling or implement the Docker Compose deployment.

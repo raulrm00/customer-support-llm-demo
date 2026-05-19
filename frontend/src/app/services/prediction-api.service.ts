@@ -16,7 +16,6 @@ export class PredictionApiService {
   private readonly apiBaseUrl = environment.apiBaseUrl;
 
   predict(request: PredictionRequest): Observable<PredictionResponse> {
-    console.log('http')
     return this.http
       .post<PredictionResponse>(`${this.apiBaseUrl}/predictions`, request)
       .pipe(timeout(10000));

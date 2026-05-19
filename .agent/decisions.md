@@ -61,3 +61,25 @@ documentation, while `refs/` must remain read-only.
 ### Consequences
 The generated specifications are available for development use, and `refs/`
 remains unchanged.
+
+## 2026-05-19 - Use FormGroup for prediction form
+
+### Context
+The prediction form in the Angular frontend was refreshing the browser on
+submission, preventing the prediction logic from executing.
+
+### Decision
+Refactored the `PredictionPageComponent` to use a `FormGroup` instead of a
+standalone `FormControl` and bound it to the `<form>` element using
+`[formGroup]`. Also migrated form validation state to use `toSignal`.
+
+### Rationale
+In Angular `ReactiveFormsModule`, the `ngSubmit` directive requires a matching
+form directive (like `FormGroupDirective`) to correctly intercept the form's
+`submit` event and prevent the default browser refresh behavior. Using
+`toSignal` for form validation state follows Angular's modern signals-based
+reactivity patterns and reduces boilerplate code in the component.
+
+### Consequences
+The form now correctly submits without refreshing the page, allowing the
+asynchronous prediction request to complete.

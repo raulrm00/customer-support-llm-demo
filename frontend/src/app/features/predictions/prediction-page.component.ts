@@ -5,9 +5,14 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { finalize, map, startWith } from 'rxjs';
 
 import { PredictionResponse } from '../../models/prediction.model';
 import { PredictionApiService } from '../../services/prediction-api.service';
@@ -44,8 +49,19 @@ export class PredictionPageComponent {
       Validators.maxLength(MAX_INSTRUCTION_LENGTH),
     ],
   });
+
+  protected readonly form = new FormGroup({
+    instruction: this.instruction,
+  });
+
   protected readonly isLoading = signal(false);
-  protected readonly isFormValid = signal(false);
+  protected readonly isFormValid = toSignal(
+    this.instruction.statusChanges.pipe(
+      startWith(this.instruction.status),
+      map(() => this.instruction.valid),
+    ),
+    { initialValue: false },
+  );
   protected readonly result = signal<PredictionResponse | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly maxLength = MAX_INSTRUCTION_LENGTH;
@@ -54,18 +70,10 @@ export class PredictionPageComponent {
     () => this.isFormValid() && !this.isLoading(),
   );
 
-  constructor() {
-    this.instruction.statusChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.isFormValid.set(this.instruction.valid));
-  }
-
   protected submit(): void {
-    console.log('submit')
     const normalizedInstruction = this.instruction.value.trim();
     this.instruction.setValue(normalizedInstruction, { emitEvent: false });
     this.instruction.markAsTouched();
-    this.isFormValid.set(this.instruction.valid);
     this.errorMessage.set(null);
 
     if (!this.instruction.valid || this.isLoading()) {

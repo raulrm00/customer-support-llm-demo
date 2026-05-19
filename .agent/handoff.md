@@ -93,10 +93,7 @@ mypy src
   until a remote is added and `dvc push` is run.
 - `ml/models/model_metadata.json` is now a generated DVC output, not a
   directly Git-tracked file.
-- Frontend validation could not be run in the current shell because `npm` and
-  `node` were not available on PATH after the user PowerShell profile failed to
-  load `fnm`.
 
 ## Suggested next task
-Restore Node/npm on PATH and run `npm test` plus `npm run build` from
-`frontend/`, or configure a DVC remote for team storage and run `dvc push`.
+Configure a DVC remote for team storage and run `dvc push`, or implement the
+Docker Compose configuration for full-stack deployment.
