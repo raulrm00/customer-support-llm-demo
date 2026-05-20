@@ -6,7 +6,8 @@ from app.api.v1.predictions import get_prediction_service
 from app.main import app
 from app.services.model_loader import ModelBundle
 from app.services.prediction_service import PredictionService
-
+from app.api import deps
+from app.models.user import User
 
 class FakePipeline:
     """Small fake pipeline used to avoid loading a real model artifact."""
@@ -28,10 +29,15 @@ def override_prediction_service() -> PredictionService:
         )
     )
 
+def override_check_usage_limit() -> User:
+    """Mock usage limit check for testing."""
+    return User(email="test@example.com", is_active=True, daily_limit_seconds=100.0, daily_usage_seconds=0.0)
+
 
 def test_prediction_endpoint_returns_category_and_metadata() -> None:
     """Prediction endpoint returns the model output contract."""
     app.dependency_overrides[get_prediction_service] = override_prediction_service
+    app.dependency_overrides[deps.check_usage_limit] = override_check_usage_limit
     client = TestClient(app)
 
     response = client.post(
@@ -53,6 +59,7 @@ def test_prediction_endpoint_returns_category_and_metadata() -> None:
 def test_prediction_endpoint_rejects_blank_instruction() -> None:
     """Prediction endpoint validates required request text."""
     app.dependency_overrides[get_prediction_service] = override_prediction_service
+    app.dependency_overrides[deps.check_usage_limit] = override_check_usage_limit
     client = TestClient(app)
 
     response = client.post("/api/v1/predictions", json={"instruction": ""})

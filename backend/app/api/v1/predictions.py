@@ -4,7 +4,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
+from app.api import deps
 from app.core.config import Settings, get_settings
+from app.models.user import User
 from app.schemas.prediction import PredictionInput, PredictionOutput
 from app.services.model_loader import load_model_bundle
 from app.services.prediction_service import PredictionService
@@ -30,6 +32,7 @@ def get_prediction_service(
 def predict_category(
     payload: PredictionInput,
     service: Annotated[PredictionService, Depends(get_prediction_service)],
+    _user: Annotated[User, Depends(deps.check_usage_limit)],
 ) -> PredictionOutput:
     """Predict the support category for a single incoming request."""
     return service.predict(payload)

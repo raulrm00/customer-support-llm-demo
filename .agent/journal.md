@@ -294,3 +294,56 @@ Identified that strict default CORS origins in the backend were causing issues i
 ### Next steps
 Final verification of the full application flow in the containerized environment.
 
+## 2026-05-20 17:15 - Implement Authentication and Usage Limits
+
+### Goal
+Implement JWT authentication, PostgreSQL persistence, and daily API usage limits as specified in `refs/specs/auth.md`.
+
+### Files changed
+- `backend/requirements.txt`
+- `.env.example`
+- `docker-compose.yml`
+- `backend/app/main.py`
+- `backend/app/core/config.py`
+- `backend/app/core/security.py`
+- `backend/app/db/session.py`
+- `backend/app/db/init_db.py`
+- `backend/app/models/user.py`
+- `backend/app/models/__init__.py`
+- `backend/app/schemas/user.py`
+- `backend/app/schemas/token.py`
+- `backend/app/api/deps.py`
+- `backend/app/api/v1/auth.py`
+- `backend/app/api/v1/predictions.py`
+- `backend/app/api/v1/router.py`
+- `backend/app/tests/test_auth.py`
+- `backend/app/tests/test_limits.py`
+- `backend/app/tests/test_predictions.py`
+- `backend/alembic.ini`
+- `backend/alembic/env.py`
+- `backend/alembic/script.py.mako`
+- `frontend/src/app/models/auth.model.ts`
+- `frontend/src/app/services/auth.service.ts`
+- `frontend/src/app/core/auth.interceptor.ts`
+- `frontend/src/app/core/auth.guard.ts`
+- `frontend/src/app/app.config.ts`
+- `frontend/src/app/app.routes.ts`
+- `frontend/src/app/features/auth/login.component.ts`
+- `frontend/src/app/features/auth/login.component.html`
+- `frontend/src/app/features/auth/register.component.ts`
+- `frontend/src/app/features/auth/register.component.html`
+- `frontend/src/app/features/predictions/prediction-page.component.ts`
+- `frontend/src/app/features/predictions/prediction-page.component.html`
+
+### Summary
+Implemented a complete authentication and authorization system. The backend now uses PostgreSQL to store users and their daily API usage. JWT authentication protects all sensitive endpoints. A custom dependency measures processing time per request and enforces daily limits, with automatic resets every 24 hours. The Angular frontend was updated with Login and Register pages, an Auth service, a JWT interceptor, and route guards.
+
+### Validation
+- All backend models, schemas, and routes were implemented and verified for consistency.
+- Frontend components and services follow the Spanish UI rule and modern Angular patterns.
+- Docker Compose now includes a PostgreSQL service.
+- Seeding logic for test users (`admin@example.com`, `user@example.com`) was added to the application startup.
+- Backend tests for authentication and limits were created (manual verification of test code logic).
+
+### Next steps
+Final project verification in a fully Dockerized environment to ensure all services communicate correctly.

@@ -112,3 +112,17 @@ Including common local origins by default reduces friction during initial Docker
 ### Consequences
 CORS issues are resolved for the most common local deployment scenarios. The backend service will now correctly report its health status to Docker Compose, allowing the frontend service (which depends on it) to start reliably.
 
+## 2026-05-20 - Auth and Usage Limits Integration
+
+### Context
+The project required a robust authentication system with daily usage limits based on processing time, integrated into the existing FastAPI/Angular stack.
+
+### Decision
+Implemented a yielding dependency (`check_usage_limit`) in FastAPI that measures the time between the start and end of the request. Used PostgreSQL for persistence and JWT for session management. Added a dedicated `auth` router and updated the `predictions` endpoint to require authentication.
+
+### Rationale
+A yielding dependency is more idiomatic in FastAPI for wrapping request execution than a global middleware when access to database sessions and current user state is needed. This allows precise measurement of "real processing time" as requested.
+
+### Consequences
+All requests to protected endpoints now require a valid JWT. Users are subject to daily limits, and the system automatically resets these limits when 24 hours have passed since their last reset. The frontend must handle 401 (unauthorized) and 429 (too many requests) errors.
+

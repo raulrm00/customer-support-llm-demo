@@ -16,6 +16,7 @@ import { finalize, map, startWith } from 'rxjs';
 
 import { PredictionResponse } from '../../models/prediction.model';
 import { PredictionApiService } from '../../services/prediction-api.service';
+import { AuthService } from '../../services/auth.service';
 
 const MAX_INSTRUCTION_LENGTH = 5000;
 
@@ -41,6 +42,9 @@ const CATEGORY_LABELS: Record<PredictionResponse['prediction'], string> = {
 })
 export class PredictionPageComponent {
   private readonly predictionApi = inject(PredictionApiService);
+  private readonly authService = inject(AuthService);
+
+  protected readonly currentUser = this.authService.currentUser;
 
   protected readonly instruction = new FormControl('', {
     nonNullable: true,
@@ -88,11 +92,22 @@ export class PredictionPageComponent {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (response) => this.result.set(response),
-        error: () =>
-          this.errorMessage.set(
-            'No se pudo obtener la prediccion. Intentalo de nuevo.',
-          ),
+        error: (err) => {
+          if (err.status === 429) {
+            this.errorMessage.set(
+              'Has superado el límite diario de uso de la API. Inténtalo de nuevo mañana.',
+            );
+          } else {
+            this.errorMessage.set(
+              'No se pudo obtener la predicción. Inténtalo de nuevo.',
+            );
+          }
+        },
       });
+  }
+
+  protected logout(): void {
+    this.authService.logout();
   }
 
   protected confidencePercent(confidence: number | null): string {

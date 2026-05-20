@@ -24,6 +24,17 @@ class Settings(BaseSettings):
     pipeline_version: str = "1.0.0"
     log_level: str = "INFO"
 
+    # Database
+    database_url: str = "postgresql://postgres:postgres@localhost:5432/customer_support"
+
+    # Auth
+    jwt_secret_key: str = "yoursecretkeyhere"
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 60
+
+    # Usage Limits
+    default_daily_limit_seconds: int = 3600
+
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
         env_file_encoding="utf-8",
