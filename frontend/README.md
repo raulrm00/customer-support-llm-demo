@@ -1,54 +1,59 @@
 # Frontend - Customer Support Classifier
 
-Angular application for interacting with the Customer Support Classifier API.
+Angular frontend for interacting with the Customer Support Classifier API. The UI is Spanish-first for end users; technical code and docs are English.
 
 ## Features
+- Interactive UI to submit requests and display predictions.
+- Spanish user-facing text and accessible components.
+- Tailwind CSS for responsive styling.
+- Typed HTTP contracts and services.
 
-- **Interactive UI**: Submit requests and see predictions in real-time.
-- **Spanish Interface**: All user-facing text is in Spanish (Labels, messages, etc.).
-- **Responsive Design**: Built with Tailwind CSS for a modern, accessible experience.
-- **Type Safe**: Fully typed API contracts and components.
+## Local development
+1. Install dependencies:
 
-## Local Setup
-
-1. **Install dependencies**:
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-2. **Run development server**:
-   ```bash
-   npm start
-   ```
-   Once running, navigate to `http://localhost:4200/`.
-
-## Docker
-
-### Build Image
-Execute from the `frontend/` directory:
 ```bash
 cd frontend
+npm install
+```
+
+2. Start development server:
+
+```bash
+npm start
+```
+
+Visit: http://localhost:4200/
+
+## Build & Docker
+Build locally:
+
+```bash
+cd frontend
+npm run build
+```
+
+Build Docker image (from `frontend/`):
+
+```bash
 docker build -t customer-support-frontend .
 ```
 
-### Run Container
+Run container:
+
 ```bash
 docker run -p 4200:4200 customer-support-frontend
 ```
 
-## Quality Assurance
+## Testing & QA
+- Unit tests: `npm test`
+- CI: Run `npm ci` and `npm run build` to validate changes.
+- Accessibility: Use axe or cypress-axe in CI for important flows.
 
-```bash
-cd frontend
-npm test        # Run unit tests
-npm run build   # Production build validation
-```
+## Configuration
+- Backend URL and environment-specific values are configured in `src/environments/*.ts`.
+- Do not hardcode backend URLs in components; use environment files.
 
-## Implementation Details
-
-- **Framework**: Angular (Standalone Components, Signals).
-- **Styling**: Tailwind CSS.
-- **Language**: UI in Spanish, Technical Code in English.
-- **Accessibility**: Follows WCAG AA standards and passes AXE checks.
-- **Backend URL**: Configured via Angular environment files.
+## Recommendations
+- Keep user-facing strings in Spanish.
+- Add E2E tests for main user flows (submit prediction, show result, error states).
+- Run `npm run lint` as part of pre-commit or CI.

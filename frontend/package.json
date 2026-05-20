@@ -6,7 +6,10 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --check \"src/**/*.{ts,html,css}\"",
+    "ci": "npm run typecheck && npm run format"
   },
   "private": true,
   "packageManager": "npm@11.12.1",

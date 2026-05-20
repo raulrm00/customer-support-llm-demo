@@ -1,21 +1,23 @@
-from datetime import datetime, timedelta, timezone
+import hashlib
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from jose import jwt
-import hashlib
 import bcrypt
+from jose import jwt
 
 from app.core.config import get_settings
 
 settings = get_settings()
 
 
-def create_access_token(subject: str | Any, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    subject: str | Any, expires_delta: timedelta | None = None
+) -> str:
     """Generate a JWT access token."""
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=settings.jwt_access_token_expire_minutes
         )
     to_encode = {"exp": expire, "sub": str(subject)}
@@ -46,6 +48,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Applies the same SHA-256 pre-hash before verifying with bcrypt.
     """
     try:
-        return bcrypt.checkpw(_sha256_bytes(plain_password), hashed_password.encode("utf-8"))
+        return bcrypt.checkpw(
+            _sha256_bytes(plain_password), hashed_password.encode("utf-8")
+        )
     except Exception:
         return False

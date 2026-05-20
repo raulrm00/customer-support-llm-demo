@@ -15,7 +15,7 @@ export class AuthService {
   private readonly apiBaseUrl = environment.apiBaseUrl;
 
   private readonly tokenKey = 'auth_token';
-  
+
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = signal<boolean>(false);
 
@@ -24,14 +24,12 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<Token> {
-    return this.http
-      .post<Token>(`${this.apiBaseUrl}/auth/login`, { email, password })
-      .pipe(
-        tap((response) => {
-          this.setToken(response.access_token);
-          this.fetchCurrentUser().subscribe();
-        })
-      );
+    return this.http.post<Token>(`${this.apiBaseUrl}/auth/login`, { email, password }).pipe(
+      tap((response) => {
+        this.setToken(response.access_token);
+        this.fetchCurrentUser().subscribe();
+      }),
+    );
   }
 
   register(email: string, password: string): Observable<User> {
@@ -62,7 +60,7 @@ export class AuthService {
       tap((user) => {
         this.currentUser.set(user);
         this.isAuthenticated.set(true);
-      })
+      }),
     );
   }
 

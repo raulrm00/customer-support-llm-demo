@@ -42,8 +42,8 @@ export class RegisterComponent {
       next: () => {
         // Auto login after registration or just redirect to login
         this.authService.login(this.email.value, this.password.value).subscribe({
-            next: () => this.router.navigate(['/']),
-            error: () => this.router.navigate(['/login'])
+          next: () => this.router.navigate(['/']),
+          error: () => this.router.navigate(['/login']),
         });
       },
       error: (err) => {

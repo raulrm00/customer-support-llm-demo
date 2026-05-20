@@ -13,15 +13,11 @@ export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('./features/auth/login.component').then(
-        (component) => component.LoginComponent,
-      ),
+      import('./features/auth/login.component').then((component) => component.LoginComponent),
   },
   {
     path: 'register',
     loadComponent: () =>
-      import('./features/auth/register.component').then(
-        (component) => component.RegisterComponent,
-      ),
+      import('./features/auth/register.component').then((component) => component.RegisterComponent),
   },
 ];

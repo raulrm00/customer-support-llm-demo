@@ -1,5 +1,9 @@
 """Tests for health endpoint behavior."""
 
+import os
+
+os.environ.setdefault("DATABASE_URL", "sqlite://")
+
 from fastapi.testclient import TestClient
 
 from app.main import app

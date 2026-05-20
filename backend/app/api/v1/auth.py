@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -11,10 +11,12 @@ from app.core.config import get_settings
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.token import Token
-from app.schemas.user import User as UserSchema, UserCreate, LoginRequest
+from app.schemas.user import LoginRequest, UserCreate
+from app.schemas.user import User as UserSchema
 
 router = APIRouter()
 settings = get_settings()
+
 
 @router.post("/register", response_model=UserSchema)
 def register(
@@ -28,7 +30,7 @@ def register(
             status_code=400,
             detail="The user with this email already exists in the system.",
         )
-    
+
     new_user = User(
         email=user_in.email,
         password_hash=security.get_password_hash(user_in.password),
@@ -41,6 +43,7 @@ def register(
     db.refresh(new_user)
     return new_user
 
+
 @router.post("/login/access-token", response_model=Token)
 def login_access_token(
     db: Annotated[Session, Depends(get_db)],
@@ -52,7 +55,7 @@ def login_access_token(
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
-    
+
     access_token_expires = timedelta(minutes=settings.jwt_access_token_expire_minutes)
     return Token(
         access_token=security.create_access_token(
@@ -61,6 +64,7 @@ def login_access_token(
         token_type="bearer",
     )
 
+
 @router.post("/login", response_model=Token)
 def login(
     db: Annotated[Session, Depends(get_db)],
@@ -68,11 +72,13 @@ def login(
 ) -> Token:
     """Standard login with JSON body."""
     user = db.query(User).filter(User.email == login_data.email).first()
-    if not user or not security.verify_password(login_data.password, user.password_hash):
+    if not user or not security.verify_password(
+        login_data.password, user.password_hash
+    ):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
-    
+
     access_token_expires = timedelta(minutes=settings.jwt_access_token_expire_minutes)
     return Token(
         access_token=security.create_access_token(
@@ -80,6 +86,7 @@ def login(
         ),
         token_type="bearer",
     )
+
 
 @router.get("/me", response_model=UserSchema)
 def read_user_me(

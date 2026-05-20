@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import health, predictions, auth
+from app.api.v1 import auth, health, predictions
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])

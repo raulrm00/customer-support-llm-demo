@@ -1,13 +1,18 @@
 """Tests for prediction endpoint behavior."""
 
+import os
+
+os.environ.setdefault("DATABASE_URL", "sqlite://")
+
 from fastapi.testclient import TestClient
 
+from app.api import deps
 from app.api.v1.predictions import get_prediction_service
 from app.main import app
+from app.models.user import User
 from app.services.model_loader import ModelBundle
 from app.services.prediction_service import PredictionService
-from app.api import deps
-from app.models.user import User
+
 
 class FakePipeline:
     """Small fake pipeline used to avoid loading a real model artifact."""
@@ -29,9 +34,15 @@ def override_prediction_service() -> PredictionService:
         )
     )
 
+
 def override_check_usage_limit() -> User:
     """Mock usage limit check for testing."""
-    return User(email="test@example.com", is_active=True, daily_limit_seconds=100.0, daily_usage_seconds=0.0)
+    return User(
+        email="test@example.com",
+        is_active=True,
+        daily_limit_seconds=100.0,
+        daily_usage_seconds=0.0,
+    )
 
 
 def test_prediction_endpoint_returns_category_and_metadata() -> None:

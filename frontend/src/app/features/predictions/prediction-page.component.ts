@@ -1,17 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, map, startWith } from 'rxjs';
 
 import { PredictionResponse } from '../../models/prediction.model';
@@ -48,10 +37,7 @@ export class PredictionPageComponent {
 
   protected readonly instruction = new FormControl('', {
     nonNullable: true,
-    validators: [
-      Validators.required,
-      Validators.maxLength(MAX_INSTRUCTION_LENGTH),
-    ],
+    validators: [Validators.required, Validators.maxLength(MAX_INSTRUCTION_LENGTH)],
   });
 
   protected readonly form = new FormGroup({
@@ -70,9 +56,7 @@ export class PredictionPageComponent {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly maxLength = MAX_INSTRUCTION_LENGTH;
   protected readonly categoryLabels = CATEGORY_LABELS;
-  protected readonly canSubmit = computed(
-    () => this.isFormValid() && !this.isLoading(),
-  );
+  protected readonly canSubmit = computed(() => this.isFormValid() && !this.isLoading());
 
   protected submit(): void {
     const normalizedInstruction = this.instruction.value.trim();
@@ -98,9 +82,7 @@ export class PredictionPageComponent {
               'Has superado el límite diario de uso de la API. Inténtalo de nuevo mañana.',
             );
           } else {
-            this.errorMessage.set(
-              'No se pudo obtener la predicción. Inténtalo de nuevo.',
-            );
+            this.errorMessage.set('No se pudo obtener la predicción. Inténtalo de nuevo.');
           }
         },
       });

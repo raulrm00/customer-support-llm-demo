@@ -1,8 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { environment } from '../../environments/environment';
@@ -33,9 +30,7 @@ describe('PredictionApiService', () => {
       expect(response.confidence).toBe(0.92);
     });
 
-    const request = httpTesting.expectOne(
-      `${environment.apiBaseUrl}/predictions`,
-    );
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/predictions`);
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(payload);
     request.flush({

@@ -3,10 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable, timeout } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import {
-  PredictionRequest,
-  PredictionResponse,
-} from '../models/prediction.model';
+import { PredictionRequest, PredictionResponse } from '../models/prediction.model';
 
 @Injectable({
   providedIn: 'root',

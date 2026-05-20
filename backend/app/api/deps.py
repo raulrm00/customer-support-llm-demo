@@ -1,21 +1,20 @@
 import time
-from datetime import datetime, timezone
-from typing import Annotated, Generator
+from collections.abc import Generator
+from datetime import UTC, datetime
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.core.config import get_settings
 from app.core.security import settings
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.token import TokenPayload
 
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl="/api/v1/auth/login/access-token"
-)
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login/access-token")
+
 
 def get_current_user(
     db: Annotated[Session, Depends(get_db)],
@@ -39,18 +38,28 @@ def get_current_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
+
 async def check_usage_limit(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-) -> Generator[User, None, None]:
+) -> Generator[User]:
     """
     Check and update daily API usage limit.
     Handles automatic reset every 24 hours.
     """
-    now = datetime.now(timezone.utc)
-    
+    now = datetime.now(UTC)
+
     # 1. Automatic Reset every 24h
-    time_since_reset = now - current_user.daily_usage_reset_at
+    # Ensure both datetimes are timezone-aware (SQLite may return naive datetimes)
+    reset_at = current_user.daily_usage_reset_at
+    if reset_at is None:
+        # If missing, initialize to now
+        reset_at = now
+    if reset_at.tzinfo is None:
+        # Treat naive timestamps as UTC
+        reset_at = reset_at.replace(tzinfo=UTC)
+
+    time_since_reset = now - reset_at
     if time_since_reset.total_seconds() >= 86400:
         current_user.daily_usage_seconds = 0.0
         current_user.daily_usage_reset_at = now
@@ -67,9 +76,9 @@ async def check_usage_limit(
 
     # 3. Measure time
     start_time = time.time()
-    
+
     yield current_user
-    
+
     # 4. Update usage after request
     duration = time.time() - start_time
     current_user.daily_usage_seconds += duration

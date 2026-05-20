@@ -23,12 +23,8 @@ describe('PredictionPageComponent', () => {
   it('renders the prediction form', () => {
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('h1')?.textContent).toContain(
-      'Clasificador de solicitudes',
-    );
-    expect(element.querySelector('label')?.textContent).toContain(
-      'Solicitud del cliente',
-    );
+    expect(element.querySelector('h1')?.textContent).toContain('Clasificador de solicitudes');
+    expect(element.querySelector('label')?.textContent).toContain('Solicitud del cliente');
     expect(element.querySelector('textarea')).toBeTruthy();
   });
 
@@ -37,9 +33,7 @@ describe('PredictionPageComponent', () => {
     submitForm();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain(
-      'El texto es obligatorio.',
-    );
+    expect(fixture.nativeElement.textContent).toContain('El texto es obligatorio.');
     expect(predictionApi.predict).not.toHaveBeenCalled();
   });
 
@@ -75,23 +69,19 @@ describe('PredictionPageComponent', () => {
   });
 
   it('renders a safe Spanish error message when the API fails', () => {
-    predictionApi.predict.mockReturnValue(
-      throwError(() => new Error('network failure')),
-    );
+    predictionApi.predict.mockReturnValue(throwError(() => new Error('network failure')));
 
     setInstructionValue('No puedo pagar la factura');
     submitForm();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain(
-      'No se pudo obtener la prediccion. Intentalo de nuevo.',
+      'No se pudo obtener la predicción. Inténtalo de nuevo.',
     );
   });
 
   function setInstructionValue(value: string): void {
-    const textarea = fixture.nativeElement.querySelector(
-      'textarea',
-    ) as HTMLTextAreaElement;
+    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
     textarea.value = value;
     textarea.dispatchEvent(new Event('input'));
     fixture.detectChanges();
