@@ -15,12 +15,8 @@ class Settings(BaseSettings):
     api_version: str = "1.0.0"
     backend_host: str = "0.0.0.0"
     backend_port: int = 8000
-    cors_allowed_origins: list[str] | str = Field(
-        default_factory=lambda: [
-            "http://localhost:4200",
-            "http://127.0.0.1:4200",
-            "http://0.0.0.0:4200",
-        ]
+    cors_allowed_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:4200"]
     )
     model_artifact_path: Path = Path("ml/models/modelo_idf.joblib")
     model_metadata_path: Path | None = Path("ml/models/model_metadata.json")
