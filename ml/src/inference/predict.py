@@ -4,11 +4,24 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import joblib
 import pandas as pd
 
+# Add the root directory to sys.path to allow importing from backend or ml/src
+sys.path.append(str(Path(__file__).resolve().parents[3]))
+# Handle the module redirection used during training
+try:
+    import app.services.qwen_model as qwen_model
+    sys.modules["app.services.qwen_model"] = qwen_model
+except ImportError:
+    try:
+        import src.inference.qwen_model as qwen_model
+        sys.modules["app.services.qwen_model"] = qwen_model
+    except ImportError:
+        pass
 
 def predict_category(model_path: Path, instruction: str) -> str:
     """Predict one support category from a persisted pipeline."""

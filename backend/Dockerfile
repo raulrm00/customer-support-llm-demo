@@ -1,13 +1,10 @@
 # Stage 1: Build dependencies
-FROM python:3.13-alpine AS builder
+FROM python:3.13-slim AS builder
 
-# Install build dependencies for pandas, numpy, and scikit-learn
-RUN apk add --no-cache \
-    g++ \
-    musl-dev \
-    python3-dev \
-    openblas-dev \
-    libstdc++
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -17,14 +14,13 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip wheel --no-cache-dir --wheel-dir /build/wheels -r requirements.txt
 
 # Stage 2: Final image
-FROM python:3.13-alpine
+FROM python:3.13-slim
 
 # Install runtime dependencies
-RUN apk add --no-cache \
-    libstdc++ \
-    openblas \
-    libgomp \
-    curl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -36,10 +32,8 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels /wheels/* && \
 # Copy backend application
 COPY backend/app /app/backend/app
 
-# Copy model artifacts (excluding training logic)
-# Note: These files are expected to be available in the build context
-COPY ml/models/modelo_idf.joblib /app/ml/models/modelo_idf.joblib
-COPY ml/models/model_metadata.json /app/ml/models/model_metadata.json
+# Copy model artifacts (including fine-tuned Qwen model)
+COPY ml/models /app/ml/models
 
 # Environment configuration
 ENV PYTHONUNBUFFERED=1 \

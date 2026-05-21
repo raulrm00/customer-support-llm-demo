@@ -4,9 +4,9 @@ An end-to-end AI-powered system for automatically classifying customer support r
 
 ## Architecture Overview
 
-- **Backend**: Python FastAPI service serving a scikit-learn model pipeline.
+- **Backend**: Python FastAPI service serving a fine-tuned Qwen-0.6B model wrapper.
 - **Frontend**: Angular application (v20+) with Tailwind CSS styling and Spanish UI.
-- **ML/Data**: DVC-managed pipeline for data processing, training, and model versioning.
+- **ML/Data**: DVC-managed pipeline for Qwen SFT fine-tuning and model versioning.
 - **Deployment**: Containerized using Docker and orchestrated with Docker Compose.
 
 ## Quick Start (Docker Compose)

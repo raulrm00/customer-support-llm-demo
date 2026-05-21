@@ -1,25 +1,35 @@
-"""Train and persist the customer support text classifier."""
+"""Train and fine-tune Qwen for customer support classification."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import joblib
+import pandas as pd
+import torch
 import yaml
+from datasets import Dataset
 from dvclive import Live  # type: ignore[attr-defined]
-from sklearn.compose import ColumnTransformer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+from peft import LoraConfig, get_peft_model
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    DataCollatorWithPadding,
+    Trainer,
+    TrainingArguments,
+)
 
 from src.evaluation.metrics import classification_metrics
+from src.inference.qwen_model import QwenClassifier
 from src.preprocessing.cleaning import load_dataset
-from src.schemas.customer_support import ProcessedCustomerSupportSchema
+from src.schemas.customer_support import CATEGORIES, ProcessedCustomerSupportSchema
 
 
 def load_params(path: Path) -> dict[str, Any]:
@@ -29,27 +39,6 @@ def load_params(path: Path) -> dict[str, Any]:
     if not isinstance(params, dict):
         raise ValueError("params.yaml must contain a mapping.")
     return params
-
-
-def build_pipeline(
-    stop_words: str | None, max_iter: int, random_state: int
-) -> Pipeline:
-    """Build the full preprocessing and classification pipeline."""
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("tfidf", TfidfVectorizer(stop_words=stop_words), "instruction"),
-        ],
-        remainder="drop",
-    )
-    return Pipeline(
-        steps=[
-            ("preprocess", preprocessor),
-            (
-                "classifier",
-                LogisticRegression(max_iter=max_iter, random_state=random_state),
-            ),
-        ]
-    )
 
 
 def log_experiment(
@@ -79,80 +68,157 @@ def log_experiment(
 
 
 def train_model(params: dict[str, Any], project_dir: Path) -> dict[str, float]:
-    """Train, evaluate, and persist the model pipeline."""
+    """Fine-tune Qwen, evaluate, and persist the model pipeline."""
     data_params = params["data"]
-    training_params = params["training"]
+    qwen_params = params["qwen"]
     artifact_params = params["artifacts"]
 
     input_path = (project_dir / data_params["input_path"]).resolve()
     model_path = project_dir / artifact_params["model_path"]
     metadata_path = project_dir / artifact_params["metadata_path"]
+    qwen_output_dir = project_dir / artifact_params["qwen_output_dir"]
+    
     model_path.parent.mkdir(parents=True, exist_ok=True)
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    qwen_output_dir.mkdir(parents=True, exist_ok=True)
 
     dataframe = load_dataset(input_path)
     validated = ProcessedCustomerSupportSchema.validate(dataframe)
 
     text_column = str(data_params["text_column"])
     target_column = str(data_params["target_column"])
-    features = validated[[text_column]]
-    target = validated[target_column]
+    
+    # Label mapping
+    label2id = {label: i for i, label in enumerate(CATEGORIES)}
+    id2label = {i: label for i, label in enumerate(CATEGORIES)}
 
-    random_state = int(training_params["random_state"])
-    test_size = float(training_params["test_size"])
-    validation_size = float(training_params["validation_size"])
-
-    x_train_validation, x_test, y_train_validation, y_test = train_test_split(
-        features,
-        target,
-        test_size=test_size,
-        random_state=random_state,
-        stratify=target,
+    # Prepare datasets
+    train_df, test_df = train_test_split(
+        validated,
+        test_size=params["training"]["test_size"],
+        random_state=params["training"]["random_state"],
+        stratify=validated[target_column],
     )
-    x_train, x_validation, y_train, y_validation = train_test_split(
-        x_train_validation,
-        y_train_validation,
-        test_size=validation_size,
-        random_state=random_state,
-        stratify=y_train_validation,
+    
+    # HuggingFace Datasets
+    train_dataset = Dataset.from_pandas(train_df[[text_column, target_column]])
+    test_dataset = Dataset.from_pandas(test_df[[text_column, target_column]])
+
+    # Tokenizer
+    model_name = qwen_params["model_name"]
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    def tokenize_function(examples):
+        tokens = tokenizer(
+            examples[text_column], 
+            truncation=True, 
+            padding="max_length", 
+            max_length=qwen_params["max_length"]
+        )
+        tokens["labels"] = [label2id[label] for label in examples[target_column]]
+        return tokens
+
+    tokenized_train = train_dataset.map(tokenize_function, batched=True)
+    tokenized_test = test_dataset.map(tokenize_function, batched=True)
+
+    # Model
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name,
+        num_labels=len(CATEGORIES),
+        id2label=id2label,
+        label2id=label2id,
+        torch_dtype="auto",
+    )
+    model.config.pad_token_id = tokenizer.pad_token_id
+
+    # LoRA
+    lora_config = LoraConfig(
+        r=qwen_params["lora_r"],
+        lora_alpha=qwen_params["lora_alpha"],
+        target_modules=["q_proj", "v_proj"],
+        lora_dropout=qwen_params["lora_dropout"],
+        bias="none",
+        task_type="SEQ_CLS",
+    )
+    model = get_peft_model(model, lora_config)
+
+    # Training Arguments
+    training_args = TrainingArguments(
+        output_dir=str(qwen_output_dir / "checkpoints"),
+        learning_rate=float(qwen_params["learning_rate"]),
+        per_device_train_batch_size=int(qwen_params["per_device_train_batch_size"]),
+        gradient_accumulation_steps=int(qwen_params["gradient_accumulation_steps"]),
+        num_train_epochs=int(qwen_params["num_train_epochs"]),
+        weight_decay=0.01,
+        eval_strategy="epoch",
+        save_strategy="epoch",
+        load_best_model_at_end=True,
+        logging_dir=str(qwen_output_dir / "logs"),
+        remove_unused_columns=True,
+        push_to_hub=False,
     )
 
-    pipeline = build_pipeline(
-        stop_words=(
-            str(training_params["stop_words"])
-            if training_params.get("stop_words")
-            else None
-        ),
-        max_iter=int(training_params["max_iter"]),
-        random_state=random_state,
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=tokenized_train,
+        eval_dataset=tokenized_test,
+        processing_class=tokenizer,
+        data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
     )
-    pipeline.fit(x_train, y_train)
 
-    metrics = {
-        **classification_metrics(y_train, pipeline.predict(x_train), "train"),
-        **classification_metrics(
-            y_validation, pipeline.predict(x_validation), "validation"
-        ),
-        **classification_metrics(y_test, pipeline.predict(x_test), "test"),
-    }
+    trainer.train()
 
-    joblib.dump(pipeline, model_path)
+    # Save final model
+    final_model_dir = qwen_output_dir / "final"
+    trainer.save_model(str(final_model_dir))
+    
+    # Merge LoRA weights for easier inference
+    merged_model = model.merge_and_unload()
+    merged_model.save_pretrained(str(final_model_dir / "merged"))
+    tokenizer.save_pretrained(str(final_model_dir / "merged"))
+
+    # Evaluation
+    predictions = trainer.predict(tokenized_test)
+    y_pred = [id2label[p.item()] for p in torch.argmax(torch.tensor(predictions.predictions), dim=-1)]
+    y_true = test_df[target_column].tolist()
+    
+    metrics = classification_metrics(y_true, y_pred, "test")
+    # Add loss from trainer
+    metrics["train_loss"] = float(trainer.state.log_history[-1].get("train_loss", 0.0))
+
+    # Save wrapper for backend
+    # Trick to ensure backend can load the class
+    QwenClassifier.__module__ = "app.services.qwen_model"
+    
+    # Point the wrapper to the merged model directory
+    # The backend will resolve this path relative to repo root
+    relative_model_path = os.path.relpath(final_model_dir / "merged", project_dir.parent)
+    classifier_wrapper = QwenClassifier(
+        model_name_or_path=relative_model_path,
+        labels=list(CATEGORIES)
+    )
+    
+    joblib.dump(classifier_wrapper, model_path)
+
     metadata = {
-        "model_version": "1.0.0",
-        "pipeline_version": "1.0.0",
+        "model_version": "2.0.0",
+        "pipeline_version": "2.0.0",
         "artifact_name": model_path.name,
         "created_at": datetime.now(UTC).isoformat(),
         "input_schema": {"required_columns": [text_column]},
         "target_column": target_column,
-        "training_rows": int(len(x_train)),
-        "validation_rows": int(len(x_validation)),
-        "test_rows": int(len(x_test)),
+        "training_rows": int(len(train_df)),
+        "test_rows": int(len(test_df)),
         "metrics": metrics,
+        "base_model": model_name
     }
     with metadata_path.open("w", encoding="utf-8") as file:
         json.dump(metadata, file, indent=2, sort_keys=True)
 
-    log_experiment(project_dir, training_params, metrics)
+    log_experiment(project_dir, qwen_params, metrics)
     return metrics
 
 

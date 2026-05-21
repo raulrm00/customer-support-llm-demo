@@ -8,6 +8,17 @@ training:
   random_state: 42
   max_iter: 1000
   stop_words: english
+qwen:
+  model_name: "Qwen/Qwen3-0.6B"
+  lora_r: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  learning_rate: 2e-4
+  num_train_epochs: 3
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 4
+  max_length: 512
 artifacts:
   model_path: models/modelo_idf.joblib
   metadata_path: models/model_metadata.json
+  qwen_output_dir: models/qwen_fine_tuned
